@@ -1,42 +1,105 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QListWidget
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt    
+from PyQt5.QtWidgets import QApplication, QWidget,QPushButton,QLabel,QListWidget,QLineEdit,QTextEdit,QVBoxLayout,QHBoxLayout,QInputDialog,QFileDialog
+from PIL import Image 
+from PIL import ImageFilter 
+import os 
 
-app = QApplication([])
-main_win = QWidget()
-main_win.setWindowTitle("Easy Editor")
+from PyQt5.QtGui import QPixmap
+
+ 
+app = QApplication([]) 
+ 
+main_win = QWidget() 
+main_win.setWindowTitle("Photo editor") 
+main_win.resize(800,600) 
+ 
+btn_papka = QPushButton("Папка") 
+btn_left = QPushButton("Ліво") 
+btn_right = QPushButton("Право") 
+btn_glass = QPushButton("Дзеркало") 
+btn_blur = QPushButton("Блюр") 
+btn_blackandwhite = QPushButton("ч/б") 
+spusok = QListWidget() 
+Tekst = QLabel("photo")
+ 
+ 
+row4 = QHBoxLayout() 
+row2 = QHBoxLayout() 
+ 
+ 
+row3 = QVBoxLayout() 
+row1 = QVBoxLayout() 
+ 
+ 
+row2.addWidget(btn_left) 
+row2.addWidget(btn_right) 
+row2.addWidget(btn_glass) 
+row2.addWidget(btn_blur) 
+row2.addWidget(btn_blackandwhite) 
+ 
+row1.addWidget(btn_papka) 
+row1.addWidget(spusok) 
+ 
+row3.addWidget(Tekst) 
+row3.addLayout(row2) 
+row4.addLayout(row1,20) 
+row4.addLayout(row3,80) 
+ 
+ 
+main_win.setLayout(row4) 
+ 
+workdir = '' 
+ 
+def chooseWorkdir(): 
+    global workdir 
+    workdir = QFileDialog.getExistingDirectory() 
+ 
+ 
+def filter(files, extensions): 
+    results = [] 
+    for filename in files: 
+        for ext in extensions: 
+            if filename.endswith(ext): 
+                results.append(filename) 
+    return results 
+ 
+ 
+def showFilenameList(): 
+    global workdir 
+    extensions = ['.jpg','.png','.gif','.jpeg'] 
+    chooseWorkdir() 
+    filenames = filter(os.listdir(workdir), extensions) 
+    spusok.clear() 
+    for filename in filenames: 
+        spusok.addItem(filename) 
+ 
+ 
+ 
+
+btn_papka.clicked.connect(showFilenameList)
 
 
-text = QLabel("Картинка")
-papka_btn = QPushButton("Папка")
-l_btn = QPushButton("Вліво")
-r_btn = QPushButton("Вправо")
-mir_btn = QPushButton("Дзеркало")
-cb_btn = QPushButton("Ч\Б")
-riz_btn = QPushButton("Різкість")
-my_list = QListWidget()
+class ImageProcessor():
+    def __init__(self):
+        self.image = None
+        self.dir = None
+        self.filename = None
+        self.save_dir = "Modified/"
 
+    def loadImage(self,dir, filename):
+        self.dir = dir
+        self.filename = filename
+        image_path = os.path.join(dir, filename)
+        self.image = Image.open(image_path)
 
-horizont_line = QHBoxLayout()
-first_v_line = QVBoxLayout()
-second_v_line = QVBoxLayout()
-buttons_line = QHBoxLayout()
+    def showImage(self,path):
+        Tekst.hide()
+        pixmapimage = QPixmap(path)
+        w, h = Tekst.width(), Tekst.height()
+        pixmapimage = pixmapimage.scarled(w,h, Qt.KeepAspectRatio)
+        Tekst.setPixmap(pixmapimage)
+        Tekst.show()
 
-first_v_line.addWidget(papka_btn)
-first_v_line.addWidget(my_list)
-second_v_line.addWidget(text)
-
-buttons_line.addWidget(l_btn)
-buttons_line.addWidget(r_btn)
-buttons_line.addWidget(mir_btn)
-buttons_line.addWidget(cb_btn)
-buttons_line.addWidget(riz_btn)
-second_v_line.addLayout(buttons_line, 80)
-
-
-horizont_line.addLayout(first_v_line, 20)
-horizont_line.addLayout(second_v_line, 80)
-
-main_win.setLayout(horizont_line)
-
-main_win.show()
-app.exec()
+    def do_bw(self):
+        self.image=self.image.convert("L")
+        
