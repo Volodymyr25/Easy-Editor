@@ -73,10 +73,13 @@ def showFilenameList():
     for filename in filenames: 
         spusok.addItem(filename) 
  
- 
- 
 
-btn_papka.clicked.connect(showFilenameList)
+def file_save(self):
+    path = os.path.join(self.dir, self.new_folder)
+    if not os.path.isdir(path):
+        os.mdir(path)
+    image_path = os.path.join(path, self.filename)
+    self.image.save(image_path)
 
 
 class ImageProcessor():
@@ -102,4 +105,44 @@ class ImageProcessor():
 
     def do_bw(self):
         self.image=self.image.convert("L")
-        
+        self.image = self.image
+        self.file_save()
+        image_path = os.path.join(self.dir, self.new_folder, self.filename)
+        self.showImage(image_path)
+
+    def do_left(self):
+        self.image=self.image.transpose(Image.ROTATE_270)
+        self.file_save()
+        image_path = os.path.join(self.dir, self.new_folder, self.filename)
+        self.showImage(image_path)
+
+    def do_right(self):
+        self.image=self.image.transpose(Image.ROTATE_90)
+        self.file_save()
+        image_path = os.path.join(self.dir, self.new_folder, self.filename)
+        self.showImage(image_path)
+
+    def do_flip(self):
+        self.image=self.image.transpose(Image.FLIP_LEFT_RIGHT)
+        self.file_save()
+        image_path = os.path.join(self.dir, self.new_folder, self.filename)
+        self.showImage(image_path)
+
+    def do_sharp(self):
+        self.image=self.image.filter(ImageFilter.SHARPEN)
+        self.file_save()
+        image_path = os.path.join(self.dir, self.new_folder, self.filename)
+        self.showImage(image_path)
+
+workimage = ImageProcessor()
+def showChosenImage():
+    if spusok.currentRow() >= 0:
+        filename = btn_papka.currentItem().text()
+        workimage.loadImage(workdir,filename)
+        image_path = os.path.join(workimage.dir, workimage.filename)
+        workimage.showImage(image_path)
+
+spusok.currentRowChanged.connect(showChosenImage)
+
+main_win.show()
+app.exec_()
